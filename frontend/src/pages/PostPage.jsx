@@ -2,12 +2,14 @@ import { Spinner, Button } from "flowbite-react";
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import PostCard from "../Compontents/PostCard";
 
 const PostPage = () => {
   const { postSlug } = useParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [post, setPost] = useState(null);
+  const [recentPosts, setRecentPosts] = useState(null);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -32,6 +34,21 @@ const PostPage = () => {
     };
     fetchPost();
   }, [postSlug]);
+
+  useEffect(() => {
+    try {
+      const fetchRecentPosts = async () => {
+        const res = await fetch(`/api/post/getposts?limit=3`);
+        const data = await res.json();
+        if (res.ok) {
+          setRecentPosts(data.posts);
+        }
+      };
+      fetchRecentPosts();
+    } catch (error) {
+      console.log(error.message);
+    }
+  }, []);
 
   if (loading)
     return (
@@ -61,6 +78,13 @@ const PostPage = () => {
         <span className="italic">
           {post && (post.content.length / 1000).toFixed(0)} mins read
         </span>
+      </div>
+      <div className="self-center p-8 font-semibold text-2xl">
+        Recent Article
+      </div>
+      <div className="flex flex-wrap gap-5 mt-5 justify-center">
+        {recentPosts &&
+          recentPosts.map((post) => <PostCard key={post._id} post={post} />)}
       </div>
     </main>
   );
